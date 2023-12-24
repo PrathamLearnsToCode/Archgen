@@ -1,14 +1,10 @@
 import open3d as o3d
 import numpy as np
-import os
-from pyvista import read
-import binvox
-
 
 #Visualize a single 3D object
 def point_cloud():
 
-    pcd = o3d.io.read_point_cloud("/Users/pratham/Desktop/Dataset 2/T2/y1.ply")
+    pcd = o3d.io.read_point_cloud("/Users/pratham/Desktop/Dataset 2/T2/y_gt.ply")
     print(pcd)
     print(np.asarray(pcd.points))
     o3d.visualization.draw_geometries([pcd])
@@ -37,52 +33,5 @@ def mesh():
 
 
 
-def voxelization(input_file, output_file, voxel_size):
-    # Read the PLY file using PyVista
-    mesh = read(input_file)
-
-    # Extract vertices
-    vertices = mesh.points
-
-    # Determine the bounding box of the mesh
-    min_bounds = np.min(vertices, axis=0)
-    max_bounds = np.max(vertices, axis=0)
-
-    # Calculate voxel dimensions
-    voxel_dimensions = ((max_bounds - min_bounds) / voxel_size).astype(int) + 1
-
-    # Create a binvox instance
-    binvox = binvox.Voxels(
-        np.zeros(voxel_dimensions, dtype=bool),
-        dims=voxel_dimensions,
-        translate=min_bounds,
-        scale=voxel_size,
-        axis_order='xyz'
-    )
-
-    # Voxelization by marking occupied voxels
-    for vertex in vertices:
-        voxel_coords = ((vertex - min_bounds) / voxel_size).astype(int)
-        binvox.data[voxel_coords[0], voxel_coords[1], voxel_coords[2]] = True
-
-    # Save the voxelized data in binvox format
-    with open(output_file, 'wb') as f:
-        binvox.write(f)
-
-def main():
-    input_directory = '/Users/pratham/Desktop/Dataset 2/T1'
-    output_directory = '/Users/pratham/Desktop/3D reconstruction/Voxelized'
-    voxel_size = 0.01  # Adjust as needed
-
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    for filename in os.listdir(input_directory):
-        if filename.endswith('.ply'):
-            input_file = os.path.join(input_directory, filename)
-            output_file = os.path.join(output_directory, filename.replace('.ply', '.binvox'))
-
-            voxelization(input_file, output_file, voxel_size)
-
 if __name__ == "__main__":
-    main()
+    point_cloud()

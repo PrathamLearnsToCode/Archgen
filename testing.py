@@ -35,21 +35,20 @@ class CustomPointCloudDataset(Dataset):
 # Specify your input directory and label directory
 input_directory = '/Users/pratham/Desktop/3D reconstruction/Modified/T1 modified/input/'
 label_directory = '/Users/pratham/Desktop/3D reconstruction/Modified/T1 modified/labels/'
-#
+
 # Create a custom dataset
 custom_dataset = CustomPointCloudDataset(input_directory, label_directory)
-#
-# # Create a DataLoader
+
+# Create a DataLoader
 batch_size = 4
 dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
-#
-# for batch in dataloader:
-#     input_batch, label_batch = batch
-#     # Process the batch as needed for your task
-#     print(batch)
-#     print("Input batch shape:", input_batch.shape)
-#     print("Label batch shape:", label_batch.shape)
-#
+
+for batch in dataloader:
+    input_batch, label_batch = batch
+    # Process the batch as needed for your task
+    print("Input batch shape:", input_batch.shape)
+    print("Label batch shape:", label_batch.shape)
+
 for batch in dataloader:
     input_batch, label_batch = batch
     for i in range(batch_size):
@@ -60,7 +59,7 @@ for batch in dataloader:
         label_cloud.points = o3d.utility.Vector3dVector(label_batch[i].numpy())
 
         # Visualize the input and label point clouds
-        o3d.visualization.draw_geometries([input_cloud, label_cloud])
+        o3d.visualization.draw_geometries([input_cloud])
 
 
 

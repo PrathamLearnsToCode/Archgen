@@ -2,25 +2,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class conv_block(nn.Module):
-    def __init__(self, in_c, out_c):
-        super().__init__()
-        self.conv1 = nn.Conv3d(in_c, out_c, kernel_size = 3, padding = 0)
-        self.conv2 = nn.Conv3d()
-class Generator(nn.Module):
-    def __init__(self):
-        super(Generator, self).__init__()
-        self.conv1 = nn.
-
 
 class Generator(nn.Module):
-    def __init__(self, noise_size=201):
+    def __init__(self, noise_size=201, cube_resolution=32):
         super(Generator, self).__init__()
 
         self.noise_size = noise_size
+        self.cube_resolution = cube_resolution
 
         self.gen_conv1 = torch.nn.ConvTranspose3d(self.noise_size, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2),
-                                                padding=1)
+                                                  padding=1)
         self.gen_conv2 = torch.nn.ConvTranspose3d(256, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=1)
         self.gen_conv3 = torch.nn.ConvTranspose3d(128, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=1)
         self.gen_conv4 = torch.nn.ConvTranspose3d(64, 32, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=1)
@@ -31,8 +22,8 @@ class Generator(nn.Module):
         self.gen_bn3 = nn.BatchNorm3d(64)
         self.gen_bn4 = nn.BatchNorm3d(32)
 
-    def forward(self, x):
-        condition_tensor = torch.ones([x.shape[0], 1], device=x.device)
+    def forward(self, x, condition):
+        condition_tensor = condition * torch.ones([x.shape[0], 1], device=x.device)
         x = torch.cat([x, condition_tensor], dim=1)
         x = x.view(x.shape[0], self.noise_size, 1, 1, 1)
 
@@ -47,8 +38,10 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, cube_resolution=32):
         super(Discriminator, self).__init__()
+
+        self.cube_resolution = cube_resolution
 
         self.disc_conv1 = torch.nn.Conv3d(2, 32, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=1)
         self.disc_conv2 = torch.nn.Conv3d(32, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=1)
@@ -63,9 +56,9 @@ class Discriminator(nn.Module):
 
         self.LRelu = nn.LeakyReLU(0.2, True)
 
-    def forward(self, x):
+    def forward(self, x, condition):
         x = x.unsqueeze(1)
-        condition_tensor = torch.ones_like(x, device=x.device)
+        condition_tensor = condition * torch.ones_like(x, device=x.device)
         x = torch.cat([x, condition_tensor], dim=1)
 
         x = self.LRelu(self.disc_bn1(self.disc_conv1(x)))
